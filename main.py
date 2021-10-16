@@ -6,7 +6,7 @@ class Function:
         self.__func = func
 
     def __call__(self, identifiers: dict):
-        return eval(self.__func, {'np': np}, identifiers)
+        return eval(self.__func, np.__dict__ | {'np': np}, identifiers)
 
     @classmethod
     def li(cls, *args):
@@ -32,9 +32,9 @@ class Integral:
         self.__max = np.array(max_, dtype=np.float32)
 
     def grid(self, n):
-        delta = (self.__max - self.__min) / n
-        v = cartesian_product(*([np.arange(n, dtype=np.float32)] * len(self.__variables)))
-        return (v + .5) * delta, delta
+        v = cartesian_product(*([np.linspace(begin, end, n, dtype=np.float32) for begin, end in
+                                 zip(self.__min, self.__max)]))
+        return v, (self.__max - self.__min) / n
 
     def sum_up(self, n):
         x, delta = self.grid(n)
@@ -46,10 +46,10 @@ class Integral:
 
 
 with open('input.txt') as f:
-    fun, *rest, min_, max_ = (l for l in map(str.strip, f) if l)
-    integral = Integral(variables=['x', 'y'],
+    vars_str, fun, *rest, min_, max_ = (l for l in map(str.strip, f) if l)
+    integral = Integral(variables=[x.strip() for x in vars_str.split(',')],
                         conditions=Function.li(*rest),
                         function=Function(fun),
-                        min_=[0, 10],
-                        max_=[0, 10])
+                        min_=[Function(x)({}) for x in min_.split(',')],
+                        max_=[Function(x)({}) for x in max_.split(',')])
     print(integral.sum_up(10000))
