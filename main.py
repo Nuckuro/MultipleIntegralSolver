@@ -1,4 +1,5 @@
 import numpy as np
+from tqdm import tqdm
 
 
 class Function:
@@ -28,15 +29,16 @@ class Integral:
         self.__variables = variables
         self.__conditions = conditions
         self.__function = function
-        self.__min = np.array(min_, dtype=np.float32)
-        self.__max = np.array(max_, dtype=np.float32)
+        self.__min = np.array(min_, dtype=np.float16)
+        self.__max = np.array(max_, dtype=np.float16)
 
     def grid(self, n):
-        v = cartesian_product(*([np.linspace(begin, end, n, dtype=np.float32) for begin, end in
+        v = cartesian_product(*([np.linspace(begin, end, n, dtype=np.float16) for begin, end in
                                  zip(self.__min, self.__max)]))
         return v, (self.__max - self.__min) / n
 
-    def sum_up(self, n):
+    def sum_up(self, n=None):
+        n = n or int(10000000 ** (1 / len(self.__variables)))
         x, delta = self.grid(n)
         var_dict = {self.__variables[i]: x[:, i] for i in range(len(self.__variables))}
         y = self.__function(var_dict) * np.product(delta)
@@ -52,4 +54,4 @@ with open('input.txt') as f:
                         function=Function(fun),
                         min_=[Function(x)({}) for x in min_.split(',')],
                         max_=[Function(x)({}) for x in max_.split(',')])
-    print(integral.sum_up(10000))
+    print(integral.sum_up())
