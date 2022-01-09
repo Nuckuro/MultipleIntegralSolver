@@ -16,7 +16,8 @@ class Function:
 
 def cartesian_product(*arrays):
     la = len(arrays)
-    arr = np.empty([len(a) for a in arrays] + [la], dtype=np.result_type(*arrays))
+    arr = np.empty([len(a) for a in arrays] + [la],
+                   dtype=np.result_type(*arrays))
     for i, a in enumerate(np.ix_(*arrays)):
         arr[..., i] = a
     return arr.reshape(-1, la)
@@ -33,14 +34,16 @@ class Integral:
         self.__max = np.array(max_, dtype=np.float16)
 
     def grid(self, n):
-        v = cartesian_product(*([np.linspace(begin, end, n, dtype=np.float16) for begin, end in
-                                 zip(self.__min, self.__max)]))
+        v = cartesian_product(
+            *([np.linspace(begin, end, n, dtype=np.float16) for begin, end in
+               zip(self.__min, self.__max)]))
         return v, (self.__max - self.__min) / n
 
     def sum_up(self, n=None):
         n = n or int(10000000 ** (1 / len(self.__variables)))
         x, delta = self.grid(n)
-        var_dict = {self.__variables[i]: x[:, i] for i in range(len(self.__variables))}
+        var_dict = {self.__variables[i]: x[:, i] for i in
+                    range(len(self.__variables))}
         y = self.__function(var_dict) * np.product(delta)
         mask = np.all([c(var_dict) for c in self.__conditions], axis=0)
         v = y[mask].sum()
