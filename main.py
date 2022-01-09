@@ -1,5 +1,6 @@
 import numpy as np
-from tqdm import tqdm
+import re
+from pprint import pprint
 
 
 class Function:
@@ -50,10 +51,28 @@ class Integral:
         return v
 
 
+def normalize_formula(s):
+    def repl(m):
+        a, xx, x = m.groups()
+        lst = [['1', a][bool(a)]] + [f'({x} ** {len(xx)})']
+        return f'({"*".join(lst)})'
+
+    s = re.sub(r'(\d)?(([a-z])\3+)', repl, s)
+    return s
+
+
 with open('input.txt') as f:
-    vars_str, fun, *rest, min_, max_ = (l for l in map(str.strip, f) if l)
+    vars_str, fun, *conditions, min_, max_ \
+        = (line for line in map(str.strip, f) if line)
+
+    fun = normalize_formula(fun)
+    conditions = list(map(normalize_formula, conditions))
+
+    print(fun)
+    pprint(conditions)
+
     integral = Integral(variables=[x.strip() for x in vars_str.split(',')],
-                        conditions=Function.li(*rest),
+                        conditions=Function.li(*conditions),
                         function=Function(fun),
                         min_=[Function(x)({}) for x in min_.split(',')],
                         max_=[Function(x)({}) for x in max_.split(',')])
