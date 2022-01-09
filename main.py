@@ -69,7 +69,8 @@ with open('input.txt') as f:
     conditions = list(map(normalize_formula, conditions))
 
     print(fun)
-    pprint(conditions)
+    for cnd in conditions:
+        print(cnd)
 
     integral = Integral(variables=[x.strip() for x in vars_str.split(',')],
                         conditions=Function.li(*conditions),
